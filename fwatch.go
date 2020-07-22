@@ -87,8 +87,16 @@ func (w Watcher) events() error {
 			return nil
 		}
 		if event.Op&fsnotify.Write == fsnotify.Write {
-			if err := w.cmd.Exec(); err != nil {
+			match, err := w.matchFile(filepath.Base(event.Name))
+			if err != nil {
 				return err
+			}
+
+			if match {
+				if err := w.cmd.Exec(); err != nil {
+					return err
+				}
+
 			}
 
 		}
@@ -109,6 +117,24 @@ func (w Watcher) addDirectories(directories ...string) error {
 	return nil
 }
 
+func (w Watcher) matchFile(file string) (bool, error) {
+	for _, pattern := range w.pattern {
+		matched, err := filepath.Match(pattern, file)
+		if err != nil {
+			return false, err
+		}
+		if matched {
+			return true, nil
+		}
+	}
+
+	match, err := w.isToIgnoreFile(file)
+	if err != nil {
+		return false, err
+	}
+	return !match, nil
+}
+
 func (w Watcher) isToIgnoreFile(file string) (bool, error) {
 	for _, pattern := range w.ignorePattern {
 		matched, err := filepath.Match(pattern, file)
@@ -116,7 +142,7 @@ func (w Watcher) isToIgnoreFile(file string) (bool, error) {
 			return true, err
 		}
 		if matched {
-			return matched, nil
+			return true, nil
 		}
 	}
 	return false, nil
