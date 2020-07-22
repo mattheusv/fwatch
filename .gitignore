@@ -9,6 +9,7 @@
 *.dll
 *.so
 *.dylib
+cmd/fwatch/fwatch
 
 # Test binary, built with `go test -c`
 *.test
