@@ -57,5 +57,9 @@ func main() {
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
 	<-c
-	w.Stop()
+
+	if err := w.Stop(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error to stop watcher: %v\n", err)
+		os.Exit(1)
+	}
 }
