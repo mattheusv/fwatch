@@ -14,7 +14,7 @@ type Watcher struct {
 	ignorePattern []string // Pattern to ignore files when changed. E.g *_test
 	pattern       []string // Pattern to watch files change.
 
-	cmd     *Command
+	cmd     *command
 	watcher *fsnotify.Watcher
 	logger  *log.Logger
 }
@@ -25,7 +25,7 @@ func NewWatcher(dir string, cmd, pattern, ignorePattern []string, logger *log.Lo
 		return nil, err
 	}
 	return &Watcher{
-		cmd: &Command{
+		cmd: &command{
 			command: cmd,
 			dir:     dir,
 			logger:  logger,
@@ -60,6 +60,13 @@ func (w *Watcher) Watch() error {
 			return err
 		}
 	}
+}
+
+func (w *Watcher) Stop() error {
+	if err := w.watcher.Close(); err != nil {
+		return err
+	}
+	return w.cmd.Stop()
 }
 
 func (w Watcher) events() error {

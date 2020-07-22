@@ -7,7 +7,15 @@ import (
 	"syscall"
 )
 
-type Command struct {
+const EmptyCommandErr = FsWatchError("Could execute empty command")
+
+type FsWatchError string
+
+func (err FsWatchError) Error() string {
+	return string(err)
+}
+
+type command struct {
 	command []string  // Command to execute when some file is changed.
 	cmd     *exec.Cmd // Current pointer to command.
 	dir     string    // Directory to execute command
@@ -15,19 +23,17 @@ type Command struct {
 	logger  *log.Logger
 }
 
-func (c *Command) Exec() error {
+func (c *command) Exec() error {
 	if len(c.command) == 0 {
 		return EmptyCommandErr
 	}
 	cmd := c.newCommand()
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
-	if c.cmd != nil {
-		c.logger.Printf("Killing current execution of %v\n", c.cmd.Args)
-		if err := syscall.Kill(-c.pid, syscall.SIGKILL); err != nil {
-			return err
-		}
+	if err := c.Stop(); err != nil {
+		return err
 	}
+
 	c.cmd = cmd
 
 	c.logger.Printf("Executing %v\n", c.cmd.Args)
@@ -40,7 +46,15 @@ func (c *Command) Exec() error {
 	return nil
 }
 
-func (c *Command) newCommand() *exec.Cmd {
+func (c *command) Stop() error {
+	if c.cmd != nil {
+		c.logger.Printf("Killing current execution of %v\n", c.cmd.Args)
+		return syscall.Kill(-c.pid, syscall.SIGKILL)
+	}
+	return nil
+}
+
+func (c *command) newCommand() *exec.Cmd {
 	cmd := exec.Command(c.command[0], c.command[1:]...)
 	cmd.Dir = c.dir
 	cmd.Stdin = os.Stdin

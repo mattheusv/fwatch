@@ -19,7 +19,7 @@ func (f *FakeOutput) Write(p []byte) (n int, err error) {
 var fakeOut = FakeOutput{}
 
 func TestExecRestartCommand(t *testing.T) {
-	c := Command{
+	c := command{
 		command: []string{"sleep", "0.5"},
 		logger:  log.New(&fakeOut, "", log.Lmsgprefix),
 	}
@@ -33,7 +33,7 @@ func TestExecRestartCommand(t *testing.T) {
 }
 
 func TestExecSucessfull(t *testing.T) {
-	c := Command{
+	c := command{
 		command: []string{"echo", "===TEST==="},
 		logger:  log.New(&fakeOut, "", log.Lmsgprefix),
 	}
@@ -44,7 +44,7 @@ func TestExecSucessfull(t *testing.T) {
 }
 
 func TestExecEmptyCommand(t *testing.T) {
-	c := Command{}
+	c := command{}
 
 	err := c.Exec()
 
