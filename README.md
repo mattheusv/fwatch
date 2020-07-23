@@ -1,4 +1,6 @@
 # fwatch
+![tests](https://github.com/msAlcantara/fwatch/workflows/tests/badge.svg) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/msAlcantara/fwatch?style=plastic) ![GitHub](https://img.shields.io/github/license/msAlcantara/fwatch?style=plastic)
+
 Utility to execute command when file changes
 
 ## Usage
