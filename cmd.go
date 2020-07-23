@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sync"
 	"syscall"
 )
 
@@ -22,6 +23,7 @@ type command struct {
 	dir     string    // Directory to execute command
 	pid     int       // Current pid of execution
 	logger  *log.Logger
+	mux     sync.Mutex
 }
 
 func (c *command) Exec() error {
@@ -35,6 +37,7 @@ func (c *command) Exec() error {
 		return err
 	}
 
+	c.mux.Lock()
 	c.cmd = cmd
 
 	c.logger.Printf("Executing %v\n", c.cmd.Args)
@@ -43,11 +46,14 @@ func (c *command) Exec() error {
 	}
 
 	c.pid = c.cmd.Process.Pid
+	c.mux.Unlock()
 
 	return nil
 }
 
 func (c *command) Stop() error {
+	c.mux.Lock()
+	defer c.mux.Unlock()
 	if c.cmd != nil {
 		c.logger.Printf("Killing current execution of %v\n", c.cmd.Args)
 		return syscall.Kill(-c.pid, syscall.SIGKILL)
