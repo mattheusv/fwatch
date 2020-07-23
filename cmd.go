@@ -8,6 +8,7 @@ import (
 )
 
 const EmptyCommandErr = FsWatchError("Could execute empty command")
+const WatcherClosedError = FsWatchError("Watcher closed")
 
 type FsWatchError string
 

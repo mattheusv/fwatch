@@ -57,7 +57,10 @@ func (w *Watcher) Watch() error {
 	w.logger.Printf("Starting watching for changes...")
 	for {
 		if err := w.events(); err != nil {
-			return err
+			if err != WatcherClosedError {
+				return err
+			}
+			return nil
 		}
 	}
 }
@@ -102,7 +105,10 @@ func (w Watcher) events() error {
 		}
 	case err, ok := <-w.watcher.Errors:
 		if !ok {
-			return fmt.Errorf("watcher files changes error: %v", err)
+			if err != nil {
+				return fmt.Errorf("watcher files changes error: %v", err)
+			}
+			return WatcherClosedError
 		}
 	}
 	return nil
